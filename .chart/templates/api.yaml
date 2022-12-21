@@ -1,0 +1,63 @@
+{{ if .Values.apiEnabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.envName }}-{{ .Values.repoName }}
+  labels:
+    app: api-layer
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: api-layer
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      annotations:
+        releaseTime: {{ dateInZone "2006-01-02 15:04:05Z" (now) "UTC"| quote }}
+      labels:
+        app: api-layer
+        gitRevision: {{ .Values.gitRevision }}
+        envName: {{ .Values.envName }}
+        branchName: {{ .Values.branchName }}
+        repoName: {{ .Values.repoName }}
+    spec:
+      containers:
+        - name: express
+          image: {{ .Values.nodeContainer }}
+          imagePullPolicy: Always
+          workingDir: /var/www/html
+          command: ["node"]
+          args: ["server.js"]
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: "/var/www/html/config"
+      initContainers:
+        - name: vault
+          image: {{ .Values.consulTemplateContainer }}
+          imagePullPolicy: Always
+          workingDir: /var/www/html
+          command: ["consul-template"]
+          args:
+          - "-vault-addr="
+          - "-vault-token="
+          - "-template=deploy/.env.tpl:config/.env"
+          - "-vault-ssl-verify=false"
+          - "-vault-renew-token=false"
+          - "-log-level=debug"
+          - "-once"
+          volumeMounts:
+            - name: config
+              mountPath: "/var/www/html/config"
+      volumes:
+        - name: config
+          emptyDir: {}
+      imagePullSecrets:
+        - name: {{ .Values.dockerRegistryCreds }}
+{{ end }}

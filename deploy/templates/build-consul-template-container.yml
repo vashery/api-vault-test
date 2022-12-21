@@ -1,0 +1,14 @@
+stages:
+  - build-containers
+
+build-consul-template-container:       # This job runs in the build stage, which runs first.
+  image: git.vsh1.me:5050/containers/base-dnd-container:latest
+  stage: build-containers
+  only:
+    refs:
+      - main
+  script: |
+    echo "docker build and push"
+    docker login -u svc_docker_registry ${CI_REGISTRY} -p "${REGISTRY_PASSWORD}"
+    docker build -t ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/consul-template:${CI_COMMIT_REF_NAME} -f Dockerfile.consul-template .
+    docker push ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/consul-template:${CI_COMMIT_REF_NAME}

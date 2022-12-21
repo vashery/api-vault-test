@@ -1,0 +1,38 @@
+#base deployment info
+repoName: example-name
+envName: example-env-name
+branchName: example-branch
+serviceUrl: example.service.url
+
+#container refrence
+nodeContainer: ""
+consulTemplateContainer: ""
+dockerRegistryCreds: ""
+
+#ingress certificate refrence
+sslRefName: ""
+
+#configuration refrence
+serviceSecrets: ""
+serviceVariables: ""
+
+#enable or disable charts
+cronEnabled: false
+apiEnabled: true
+workerEnabled: false
+
+#replica controls
+replicaCount: 1
+
+#hpaMinReplicas will override the base replica count if the deployment is targeted by the hpa
+hpaMaxReplicas: 8
+hpaMinReplicas: 2
+hpaAverageCpuUtilization: 40
+
+#resource managment: base resources
+memoryRequests: "50Mi"
+cpuRequests: "50m"
+
+#resource managment: max resource limits
+memoryLimits: "200Mi"
+cpuLimits: "750m"

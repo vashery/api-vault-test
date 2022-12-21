@@ -1,0 +1,7 @@
+FROM node:alpine
+
+COPY . /var/www/html
+
+RUN apk update && \
+    cd /var/www/html && \
+    yarn install

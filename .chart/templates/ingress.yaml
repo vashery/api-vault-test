@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.envName }}-{{ .Values.repoName }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+spec:
+  rules:
+    - host: {{ .Values.serviceUrl }}
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: {{ .Values.envName }}-{{ .Values.repoName}}
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - {{ .Values.serviceUrl }}
+      secretName: "letsencrypt-production"

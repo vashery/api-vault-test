@@ -1,0 +1,8 @@
+include:
+  - '/deploy/templates/build-node-container.yml'
+  - '/deploy/templates/build-consul-template-container.yml'
+  - '/deploy/templates/helm-deploy.yml'
+
+stages:
+  - build-containers
+  - helm-deploy

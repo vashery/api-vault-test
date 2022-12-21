@@ -1,0 +1,3 @@
+FROM hashicorp/consul-template
+
+COPY . /var/www/html

@@ -1,0 +1,34 @@
+stages:
+  - helm-deploy
+
+helm-deploy:
+  image: git.vsh1.me:5050/containers/base-helm-container:latest
+  stage: helm-deploy
+  environment:
+    name: ${CI_COMMIT_REF_NAME}
+  only:
+    refs:
+      - main
+  script: |
+    URL=$(echo ${CI_ENVIRONMENT_URL} | awk -F[/:] '{print $4}')
+    echo "setting up k8s config for specific environment ${CI_COMMIT_REF_NAME}"
+    echo $K8S_KUBECONFIG > .chart/kubeconfig.yaml
+
+    echo "using local chart and running helm upgrade"
+    cd .chart
+    helm upgrade \
+    --history-max=1 \
+    --kubeconfig="kubeconfig.yaml" \
+    --set gitRevision=${CI_COMMIT_SHA} \
+    --set serviceUrl=${URL} \
+    --set branchName=${CI_COMMIT_REF_NAME} \
+    --set envName=${CI_COMMIT_REF_NAME} \
+    --set repoName=${CI_PROJECT_NAME} \
+    --set sslRefName="vsh1-me" \
+    --set dockerRegistryCreds="git-vsh1-me" \
+    --set nodeContainer="${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/node:${CI_COMMIT_REF_NAME}" \
+    --set consulTemplateContainer="${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/consul-template:${CI_COMMIT_REF_NAME}" \
+    --set apiEnabled="true" \
+    --namespace "${CI_COMMIT_REF_NAME}-${CI_PROJECT_NAME}" \
+    --create-namespace \
+    --install api .
